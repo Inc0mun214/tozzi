@@ -1,64 +1,39 @@
 const pool = require('../config/db');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-exports.listarProdutos = async (req, res) => {
-  try {
-    const { rows } = await pool.query('SELECT * FROM produtos ORDER BY id DESC');
-    res.json(rows);
-  } catch (err) {
-    console.error('Erro ao buscar produtos:', err);
-    res.status(500).json({ error: 'Erro ao buscar produtos' });
-  }
-};
+const JWT_SECRET = process.env.JWT_SECRET || 'sua_chave_secreta_super_segura';
 
-exports.criarProduto = async (req, res) => {
-  const { nome, categoria, preco, descricao, imagem } = req.body;
+exports.login = async (req, res) => {
+  const { usuario, senha } = req.body;
   try {
-    const query = `
-      INSERT INTO produtos (nome, categoria, preco, descricao, imagem)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *
-    `;
-    const { rows } = await pool.query(query, [nome, categoria, preco, descricao, imagem]);
-    res.status(201).json(rows[0]);
-  } catch (err) {
-    console.error('Erro ao salvar produto:', err);
-    res.status(500).json({ error: 'Erro ao salvar produto' });
-  }
-};
-
-exports.atualizarProduto = async (req, res) => {
-  const { id } = req.params;
-  const { nome, categoria, preco, descricao, imagem } = req.body;
-  try {
-    const query = `
-      UPDATE produtos
-      SET nome = $1, categoria = $2, preco = $3, descricao = $4, imagem = $5
-      WHERE id = $6 RETURNING *
-    `;
-    const { rows } = await pool.query(query, [nome, categoria, preco, descricao, imagem, id]);
+    const { rows } = await pool.query('SELECT * FROM usuarios WHERE usuario = $1', [usuario]);
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Produto não encontrado' });
+      return res.status(401).json({ error: 'Usuário ou senha inválidos' });
     }
 
-    res.json(rows[0]);
-  } catch (err) {
-    console.error('Erro ao atualizar produto:', err);
-    res.status(500).json({ error: 'Erro ao atualizar produto' });
-  }
-};
+    const user = rows[0];
+    const senhaValida = await bcrypt.compare(senha, user.senha);
 
-exports.deletarProduto = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query('DELETE FROM produtos WHERE id = $1', [id]);
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Produto não encontrado' });
+    if (!senhaValida) {
+      return res.status(401).json({ error: 'Usuário ou senha inválidos' });
     }
 
-    res.json({ message: 'Produto deletado com sucesso' });
+    // Gerar token JWT com expiração de 8 horas
+    const token = jwt.sign(
+      { id: user.id, usuario: user.usuario },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    res.json({
+      message: 'Login realizado com sucesso!',
+      user: { id: user.id, usuario: user.usuario, email: user.email },
+      token
+    });
   } catch (err) {
-    console.error('Erro ao deletar produto:', err);
-    res.status(500).json({ error: 'Erro ao remover produto' });
+    console.error('Erro ao realizar login:', err);
+    res.status(500).json({ error: 'Erro interno no login' });
   }
 };
