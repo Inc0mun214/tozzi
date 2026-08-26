@@ -73,7 +73,7 @@ app.delete('/api/produtos/:id', async (req, res) => {
 });
 
 // Fallback para SPA / Roteamento estático
-app.get('/*', (req, res) => {
+app.get('{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
