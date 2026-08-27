@@ -234,6 +234,7 @@ DOM.checkoutBtn.addEventListener('click', () => {
   const encoded = encodeURIComponent(message);
   window.open(`https://wa.me/${state.whatsappNumber}?text=${encoded}`, '_blank');
 });
+state.whatsappNumber = '551591135609';
 
 // Event Listeners Globais
 DOM.openCartBtn.addEventListener('click', () => toggleCart(true));
