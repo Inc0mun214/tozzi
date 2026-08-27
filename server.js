@@ -19,7 +19,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 2. Servir a subpasta 'public/admin' para arquivos estáticos em /admin
 app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
 
-// 3. Rotas explícitas para as páginas HTML do Admin
+// 3. Redirecionamentos para requisições antigas sem o prefixo /admin/
+app.get('/admin.html', (req, res) => {
+  res.redirect('/admin/admin.html');
+});
+
+app.get('/gestao.html', (req, res) => {
+  res.redirect('/admin/gestao.html');
+});
+
+// 4. Rotas explícitas para as páginas HTML do Admin
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'admin.html'));
 });
