@@ -2,141 +2,163 @@
 const state = {
   products: [],
   categories: [],
-  cart: JSON.parse(localStorage.getItem('tozzi_cart')) || [],
   selectedCategory: 'all',
-  searchQuery: '',
-  whatsappNumber: '5515999999999' // Insira o número do WhatsApp da Tozzi Materiais Elétricos
+  cart: JSON.parse(localStorage.getItem('tozzi_cart')) || []
 };
 
-// Elementos do DOM
+// Referências de Elementos do DOM
 const DOM = {
   productsGrid: document.getElementById('productsGrid'),
   categoriesContainer: document.getElementById('categoriesContainer'),
-  searchInput: document.getElementById('searchInput'),
+  cartBadge: document.getElementById('cartBadge'),
   cartDrawer: document.getElementById('cartDrawer'),
   cartOverlay: document.getElementById('cartOverlay'),
   cartSidebar: document.getElementById('cartSidebar'),
-  openCartBtn: document.getElementById('openCartBtn'),
-  closeCartBtn: document.getElementById('closeCartBtn'),
   cartItems: document.getElementById('cartItems'),
   cartTotal: document.getElementById('cartTotal'),
-  cartBadge: document.getElementById('cartBadge'),
+  openCartBtn: document.getElementById('openCartBtn'),
+  closeCartBtn: document.getElementById('closeCartBtn'),
+  checkoutBtn: document.getElementById('checkoutBtn'),
   deliveryMethod: document.getElementById('deliveryMethod'),
   addressField: document.getElementById('addressField'),
   customerAddress: document.getElementById('customerAddress'),
-  checkoutBtn: document.getElementById('checkoutBtn')
+  searchInput: document.getElementById('searchInput'),
+  searchInputMobile: document.getElementById('searchInputMobile')
 };
 
-// Debounce para otimização de busca
-function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
+// --- BUSCA DE DADOS NA API ---
+
+async function fetchCategories() {
+  try {
+    const res = await fetch('/api/categories');
+    if (!res.ok) throw new Error('Erro ao buscar categorias');
+    state.categories = await res.json();
+    renderCategories();
+  } catch (err) {
+    console.error('Falha ao carregar categorias:', err);
+  }
 }
 
-// Renderização dos Produtos
-function renderProducts() {
-  if (state.products.length === 0) {
+async function fetchProducts(searchQuery = '') {
+  try {
+    let url = `/api/products?category=${state.selectedCategory}`;
+    if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Erro ao buscar produtos');
+    state.products = await res.json();
+    renderProducts();
+  } catch (err) {
+    console.error('Falha ao carregar produtos:', err);
     DOM.productsGrid.innerHTML = `
       <div class="col-span-full text-center py-12 text-slate-500">
-        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
-        <p>Nenhum produto encontrado.</p>
+        <i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-amber-500"></i>
+        <p>Não foi possível carregar o catálogo de produtos no momento.</p>
+      </div>
+    `;
+  }
+}
+
+// --- RENDERIZAÇÃO DA VITRINE ---
+
+function renderProducts() {
+  if (!DOM.productsGrid) return;
+
+  if (state.products.length === 0) {
+    DOM.productsGrid.innerHTML = `
+      <div class="col-span-full text-center py-16 text-slate-500 bg-slate-900/50 rounded-2xl border border-slate-800">
+        <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
+        <p class="text-base font-medium text-slate-400">Nenhum produto encontrado nesta categoria.</p>
       </div>
     `;
     return;
   }
 
   DOM.productsGrid.innerHTML = state.products.map(product => `
-    <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex flex-col justify-between hover:border-slate-600 transition-colors">
+    <div class="product-card bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/5">
       <div>
         <div class="h-48 bg-slate-950 overflow-hidden relative">
-          <img src="${product.image_url || 'https://via.placeholder.com/300'}" alt="${product.name}" class="w-full h-full object-cover">
-          ${product.featured ? `<span class="absolute top-2 left-2 bg-amber-500 text-slate-950 font-bold text-xs px-2 py-0.5 rounded">Destaque</span>` : ''}
+          <img src="${product.image_url || 'https://via.placeholder.com/400x300?text=Tozzi+Eletricos'}" 
+               alt="${product.name}" 
+               class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+          ${product.featured ? `<span class="absolute top-3 left-3 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md shadow-md">Destaque</span>` : ''}
         </div>
-        <div class="p-4">
-          <span class="text-xs text-amber-500 uppercase font-semibold tracking-wider">${product.category_name || 'Geral'}</span>
+        <div class="p-5">
+          <span class="text-[11px] text-emerald-400 uppercase font-bold tracking-wider">${product.category_name || 'Geral'}</span>
           <h3 class="font-bold text-white text-base mt-1 line-clamp-1">${product.name}</h3>
-          <p class="text-slate-400 text-xs mt-1 line-clamp-2">${product.description || ''}</p>
+          <p class="text-slate-400 text-xs mt-2 line-clamp-2 leading-relaxed">${product.description || 'Produto com certificado de segurança e alta durabilidade.'}</p>
         </div>
       </div>
-      <div class="p-4 pt-0 flex items-center justify-between mt-2">
-        <span class="text-lg font-bold text-white">R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-        <button onclick="addToCart(${product.id})" class="bg-slate-700 hover:bg-amber-500 hover:text-slate-950 text-white font-bold p-2.5 rounded-lg transition-colors">
-          <i class="fa-solid fa-plus"></i>
+      <div class="p-5 pt-0 flex items-center justify-between mt-2 border-t border-slate-800/50">
+        <div>
+          <span class="text-xs text-slate-500 block">Preço un.</span>
+          <span class="text-lg font-black text-emerald-400">R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+        </div>
+        <button onclick="addToCart(${product.id})" class="bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-bold p-3 rounded-xl transition-all duration-200">
+          <i class="fa-solid fa-cart-plus text-base"></i>
         </button>
       </div>
     </div>
   `).join('');
+
+  if (typeof gsap !== 'undefined') {
+    gsap.from('.product-card', {
+      duration: 0.4,
+      y: 15,
+      opacity: 0,
+      stagger: 0.04,
+      ease: 'power2.out'
+    });
+  }
 }
 
-// Renderização dos Filtros de Categoria
 function renderCategories() {
+  if (!DOM.categoriesContainer) return;
+
   const categoriesHTML = state.categories.map(cat => `
-    <button data-slug="${cat.slug}" class="category-btn bg-slate-800 text-slate-300 hover:bg-slate-700 font-medium px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors">
+    <button data-slug="${cat.slug}" class="category-btn bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 font-medium px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all">
       ${cat.name}
     </button>
   `).join('');
 
   DOM.categoriesContainer.innerHTML = `
-    <button data-slug="all" class="category-btn bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors">
+    <button data-slug="all" class="category-btn bg-emerald-500 text-slate-950 font-bold px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all shadow-md">
       Todos os Produtos
     </button>
   ` + categoriesHTML;
 
-  // Listeners das Categorias
   document.querySelectorAll('.category-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       document.querySelectorAll('.category-btn').forEach(b => {
-        b.className = 'category-btn bg-slate-800 text-slate-300 hover:bg-slate-700 font-medium px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors';
+        b.className = 'category-btn bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 font-medium px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all';
       });
-      e.target.className = 'category-btn bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors';
+      e.target.className = 'category-btn bg-emerald-500 text-slate-950 font-bold px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all shadow-md';
       state.selectedCategory = e.target.dataset.slug;
       fetchProducts();
     });
   });
 }
 
-// Fetch dos Produtos na API
-async function fetchProducts() {
-  try {
-    const params = new URLSearchParams();
-    if (state.selectedCategory !== 'all') params.append('category', state.selectedCategory);
-    if (state.searchQuery) params.append('search', state.searchQuery);
+// --- LÓGICA DO CARRINHO DE COTAÇÃO ---
 
-    const res = await fetch(`/api/products?${params.toString()}`);
-    state.products = await res.json();
-    renderProducts();
-  } catch (err) {
-    console.error('Erro ao buscar produtos:', err);
-  }
-}
-
-// Fetch das Categorias
-async function fetchCategories() {
-  try {
-    const res = await fetch('/api/categories');
-    state.categories = await res.json();
-    renderCategories();
-  } catch (err) {
-    console.error('Erro ao carregar categorias:', err);
-  }
-}
-
-// Carrinho de Compras
 window.addToCart = function(productId) {
   const product = state.products.find(p => p.id === productId);
   if (!product) return;
 
-  const existing = state.cart.find(item => item.id === productId);
-  if (existing) {
-    existing.quantity++;
+  const existingItem = state.cart.find(item => item.id === productId);
+  if (existingItem) {
+    existingItem.quantity += 1;
   } else {
-    state.cart.push({ ...product, quantity: 1 });
+    state.cart.push({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      quantity: 1
+    });
   }
 
   saveCart();
+  updateCartUI();
   toggleCart(true);
 };
 
@@ -148,48 +170,61 @@ window.updateQuantity = function(productId, delta) {
   if (item.quantity <= 0) {
     state.cart = state.cart.filter(i => i.id !== productId);
   }
+
   saveCart();
+  updateCartUI();
+};
+
+window.removeFromCart = function(productId) {
+  state.cart = state.cart.filter(i => i.id !== productId);
+  saveCart();
+  updateCartUI();
 };
 
 function saveCart() {
   localStorage.setItem('tozzi_cart', JSON.stringify(state.cart));
-  updateCartUI();
 }
 
 function updateCartUI() {
-  const totalCount = state.cart.reduce((acc, item) => acc + item.quantity, 0);
-  DOM.cartBadge.innerText = totalCount;
+  const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  if (DOM.cartBadge) DOM.cartBadge.innerText = totalItems;
+  if (DOM.cartTotal) DOM.cartTotal.innerText = `R$ ${totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+  if (!DOM.cartItems) return;
 
   if (state.cart.length === 0) {
-    DOM.cartItems.innerHTML = '<p class="text-center text-slate-500 py-8">Seu carrinho está vazio.</p>';
-    DOM.cartTotal.innerText = 'R$ 0,00';
+    DOM.cartItems.innerHTML = `
+      <div class="text-center py-12 text-slate-500">
+        <i class="fa-solid fa-cart-arrow-down text-4xl mb-3 text-slate-700"></i>
+        <p class="text-sm">Seu carrinho de cotação está vazio.</p>
+      </div>
+    `;
     return;
   }
 
-  let total = 0;
-  DOM.cartItems.innerHTML = state.cart.map(item => {
-    const itemTotal = item.price * item.quantity;
-    total += itemTotal;
-    return `
-      <div class="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-slate-800">
-        <div class="flex-1 pr-2">
-          <h4 class="font-bold text-sm text-white line-clamp-1">${item.name}</h4>
-          <p class="text-xs text-amber-500">R$ ${parseFloat(item.price).toFixed(2)}</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="updateQuantity(${item.id}, -1)" class="w-6 h-6 bg-slate-800 hover:bg-slate-700 text-white rounded font-bold flex items-center justify-center text-xs">-</button>
-          <span class="text-sm font-bold w-4 text-center">${item.quantity}</span>
-          <button onclick="updateQuantity(${item.id}, 1)" class="w-6 h-6 bg-slate-800 hover:bg-slate-700 text-white rounded font-bold flex items-center justify-center text-xs">+</button>
-        </div>
+  DOM.cartItems.innerHTML = state.cart.map(item => `
+    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+      <div class="flex-1 min-w-0">
+        <h4 class="text-white text-sm font-bold truncate">${item.name}</h4>
+        <span class="text-emerald-400 text-xs font-semibold">R$ ${(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
       </div>
-    `;
-  }).join('');
-
-  DOM.cartTotal.innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg p-1">
+        <button onclick="updateQuantity(${item.id}, -1)" class="w-6 h-6 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center justify-center text-xs font-bold">-</button>
+        <span class="text-xs font-bold text-white px-1">${item.quantity}</span>
+        <button onclick="updateQuantity(${item.id}, 1)" class="w-6 h-6 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center justify-center text-xs font-bold">+</button>
+      </div>
+      <button onclick="removeFromCart(${item.id})" class="text-slate-500 hover:text-rose-400 p-1">
+        <i class="fa-solid fa-trash-can text-sm"></i>
+      </button>
+    </div>
+  `).join('');
 }
 
-// Controle do Drawer
 function toggleCart(open) {
+  if (!DOM.cartDrawer || !DOM.cartSidebar || !DOM.cartOverlay) return;
+
   if (open) {
     DOM.cartDrawer.classList.remove('pointer-events-none');
     DOM.cartOverlay.classList.remove('opacity-0');
@@ -197,64 +232,90 @@ function toggleCart(open) {
   } else {
     DOM.cartOverlay.classList.add('opacity-0');
     DOM.cartSidebar.classList.add('translate-x-full');
-    setTimeout(() => DOM.cartDrawer.classList.add('pointer-events-none'), 300);
+    setTimeout(() => {
+      DOM.cartDrawer.classList.add('pointer-events-none');
+    }, 300);
   }
 }
 
-// Geração e Checkout WhatsApp
-DOM.checkoutBtn.addEventListener('click', () => {
+// --- CHECKOUT VIA WHATSAPP ---
+
+function handleCheckout() {
   if (state.cart.length === 0) {
-    alert('Adicione ao menos um produto no carrinho!');
+    alert('Adicione ao menos um item ao seu orçamento antes de prosseguir.');
     return;
   }
 
-  const method = DOM.deliveryMethod.value;
-  const address = DOM.customerAddress.value.trim();
+  const deliveryMethod = DOM.deliveryMethod ? DOM.deliveryMethod.value : 'Retirada na Matriz (Cerquilho-SP)';
+  const address = DOM.customerAddress ? DOM.customerAddress.value.trim() : '';
 
-  if (method.includes('Entrega') && !address) {
-    alert('Por favor, digite o endereço completo para entrega em Cerquilho-SP.');
+  if (deliveryMethod.includes('Entrega') && !address) {
+    alert('Por favor, informe o endereço da obra para calcularmos o frete de entrega.');
+    if (DOM.customerAddress) DOM.customerAddress.focus();
     return;
   }
 
-  let message = `*NOVO PEDIDO - TOZZI MATERIAIS ELÉTRICOS*\n`;
-  message += `📍 *Cidade:* Cerquilho-SP\n`;
-  message += `📦 *Modalidade:* ${method}\n`;
-  if (address) message += `🏠 *Endereço:* ${address}\n`;
-  message += `------------------------------------\n\n`;
+  let text = `*SOLICITAÇÃO DE COTAÇÃO - TOZZI MATERIAIS ELÉTRICOS*\n\n`;
+  text += `*Itens Solicitados:*\n`;
 
   let total = 0;
-  state.cart.forEach(item => {
+  state.cart.forEach((item, index) => {
     const subtotal = item.price * item.quantity;
     total += subtotal;
-    message += `• ${item.quantity}x ${item.name} - R$ ${subtotal.toFixed(2)}\n`;
+    text += `${index + 1}. ${item.name} (x${item.quantity}) - R$ ${subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
   });
 
-  message += `\n*TOTAL: R$ ${total.toFixed(2)}*`;
-
-  const encoded = encodeURIComponent(message);
-  window.open(`https://wa.me/${state.whatsappNumber}?text=${encoded}`, '_blank');
-});
-state.whatsappNumber = '551591135609';
-
-// Event Listeners Globais
-DOM.openCartBtn.addEventListener('click', () => toggleCart(true));
-DOM.closeCartBtn.addEventListener('click', () => toggleCart(false));
-DOM.cartOverlay.addEventListener('click', () => toggleCart(false));
-
-DOM.deliveryMethod.addEventListener('change', (e) => {
-  if (e.target.value.includes('Entrega')) {
-    DOM.addressField.classList.remove('hidden');
-  } else {
-    DOM.addressField.classList.add('hidden');
+  text += `\n*Estimativa Total:* R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+  text += `*Forma de Recebimento:* ${deliveryMethod}\n`;
+  
+  if (address) {
+    text += `*Endereço:* ${address}\n`;
   }
-});
 
-DOM.searchInput.addEventListener('input', debounce((e) => {
-  state.searchQuery = e.target.value.trim();
+  text += `\nAguardo o retorno do vendedor sobre a disponibilidade de estoque!`;
+
+  const phone = '5515991135609';
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  
+  window.open(whatsappUrl, '_blank');
+}
+
+// --- EVENT LISTENERS E INICIALIZAÇÃO ---
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchCategories();
   fetchProducts();
-}, 400));
+  updateCartUI();
 
-// Inicialização
-fetchCategories();
-fetchProducts();
-updateCartUI();
+  if (DOM.openCartBtn) DOM.openCartBtn.addEventListener('click', () => toggleCart(true));
+  if (DOM.closeCartBtn) DOM.closeCartBtn.addEventListener('click', () => toggleCart(false));
+  if (DOM.cartOverlay) DOM.cartOverlay.addEventListener('click', () => toggleCart(false));
+  if (DOM.checkoutBtn) DOM.checkoutBtn.addEventListener('click', handleCheckout);
+
+  if (DOM.deliveryMethod) {
+    DOM.deliveryMethod.addEventListener('change', (e) => {
+      if (DOM.addressField) {
+        if (e.target.value.includes('Entrega')) {
+          DOM.addressField.classList.remove('hidden');
+        } else {
+          DOM.addressField.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  // Busca por Texto em Tempo Real
+  const setupSearch = (inputEl) => {
+    if (!inputEl) return;
+    let timeout = null;
+    inputEl.addEventListener('input', (e) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        fetchProducts(e.target.value.trim());
+      }, 300);
+    });
+  };
+
+  setupSearch(DOM.searchInput);
+  setupSearch(DOM.searchInputMobile);
+});

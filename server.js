@@ -19,19 +19,37 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const PgStore = connectPgSimple(session);
 
-// Mandatory for Render Reverse Proxy
 app.set('trust proxy', 1);
 
-// Hardening de Segurança via Helmet
+// Helmet ajustado para liberar GSAP, FontAwesome, Tailwind e Unsplash
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com"],
-        fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-        imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://*.unsplash.com"],
+        scriptSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "https://cdn.tailwindcss.com", 
+          "https://cdnjs.cloudflare.com"
+        ],
+        styleSrc: [
+          "'self'", 
+          "'unsafe-inline'", 
+          "https://cdn.tailwindcss.com", 
+          "https://cdnjs.cloudflare.com"
+        ],
+        fontSrc: [
+          "'self'", 
+          "https://cdnjs.cloudflare.com"
+        ],
+        imgSrc: [
+          "'self'", 
+          "data:", 
+          "https://images.unsplash.com", 
+          "https://*.unsplash.com",
+          "https://via.placeholder.com"
+        ],
         connectSrc: ["'self'"],
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
@@ -43,7 +61,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuração de Sessão Segura persistida em PostgreSQL
+// Configuração da Sessão
 app.use(
   session({
     store: new PgStore({
@@ -56,7 +74,7 @@ app.use(
     saveUninitialized: false,
     name: 'tozzi_sid',
     cookie: {
-      maxAge: 8 * 60 * 60 * 1000, // 8 Horas
+      maxAge: 8 * 60 * 60 * 1000,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -64,25 +82,21 @@ app.use(
   })
 );
 
-// Rotas Estáticas
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Atribuição das Rotas de API
+// Rotas de API
 app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Fallback do SPA Administrative e Public Routing
 app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
-// Handler Global de Erro
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Ocorreu um erro interno no servidor.' });
 });
 
-// Inicialização com tratamento do DB
 async function bootstrap() {
   try {
     await initDb();

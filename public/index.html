@@ -1,93 +1,369 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tozzi Materiais Elétricos | Cerquilho-SP</title>
+  <title>Tozzi Materiais Elétricos | Cerquilho e Tietê - SP</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Gradientes e luz neon esverdeada */
+    .text-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-glow {
+      background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+    }
+    .border-glow {
+      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+    }
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-none {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans overflow-x-hidden">
 
-  <!-- Header -->
-  <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="bg-amber-500 text-slate-950 font-black text-xl px-3 py-1.5 rounded-lg">TOZZI</div>
+  <!-- TOPBAR REGIONAL -->
+  <div class="bg-emerald-500 text-slate-950 font-bold text-xs py-1.5 px-4 text-center tracking-wide">
+    <i class="fa-solid fa-store mr-1"></i> Atendimento presencial e entregas rápidas em <strong>Cerquilho-SP</strong> e <strong>Tietê-SP</strong>!
+  </div>
+
+  <!-- HEADER FIXO COM EFEITO FROSTED GLASS -->
+  <header class="bg-slate-950/80 backdrop-blur-md border-b border-emerald-950/60 sticky top-0 z-40 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Logo da Empresa (Tema Esverdeado) -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="bg-emerald-500 group-hover:bg-emerald-400 text-slate-950 font-black text-2xl px-3.5 py-1 rounded-xl transition-transform duration-300 group-hover:scale-105 shadow-lg shadow-emerald-500/20 flex items-center gap-1.5">
+          <i class="fa-solid fa-bolt text-slate-950 text-xl"></i> TOZZI
+        </div>
         <div>
-          <h1 class="font-bold text-lg leading-none text-white">Materiais Elétricos</h1>
-          <p class="text-xs text-amber-500 font-medium"><i class="fa-solid fa-location-dot"></i> Cerquilho - SP</p>
+          <h1 class="font-bold text-lg leading-none text-white tracking-wide">Materiais Elétricos</h1>
+          <p class="text-xs text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
+            <i class="fa-solid fa-location-dot"></i> Cerquilho & Tietê - SP
+          </p>
         </div>
+      </a>
+
+      <!-- Navegação Institucional -->
+      <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-300">
+        <a href="#hero" class="hover:text-emerald-400 transition-colors">Início</a>
+        <a href="#sobre" class="hover:text-emerald-400 transition-colors">Nossa História</a>
+        <a href="#catalogo" class="hover:text-emerald-400 transition-colors">Catálogo</a>
+        <a href="#unidades" class="hover:text-emerald-400 transition-colors">Unidades</a>
+      </nav>
+
+      <!-- Busca + Carrinho de Cotação -->
+      <div class="flex items-center gap-3 flex-1 md:flex-initial justify-end">
+        <div class="relative w-full max-w-xs hidden sm:block">
+          <input type="text" id="searchInput" placeholder="Fios, disjuntores, LED..." 
+                 class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-slate-500">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-xs"></i>
+        </div>
+
+        <button id="openCartBtn" class="relative bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg shadow-emerald-500/20">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="hidden sm:inline text-sm">Orçamento</span>
+          <span id="cartBadge" class="bg-slate-950 text-emerald-400 text-xs px-2 py-0.5 rounded-full font-extrabold border border-emerald-500/30">0</span>
+        </button>
       </div>
 
-      <!-- Barra de Pesquisa -->
-      <div class="flex-1 max-w-md min-w-[280px]">
-        <div class="relative">
-          <input type="text" id="searchInput" placeholder="Buscar fios, lâmpadas, disjuntores..." 
-                 class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-        </div>
-      </div>
-
-      <!-- Carrinho Button -->
-      <button id="openCartBtn" class="relative bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span class="hidden sm:inline">Carrinho</span>
-        <span id="cartBadge" class="bg-slate-950 text-amber-500 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
-      </button>
     </div>
   </header>
 
-  <!-- Conteúdo Principal -->
-  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-    
-    <!-- Categorias / Filtros -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none" id="categoriesContainer">
-      <button data-slug="all" class="category-btn bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors">
-        Todos os Produtos
-      </button>
-    </div>
+  <!-- SEÇÃO 1: HERO SECTION -->
+  <section id="hero" class="relative py-20 lg:py-28 overflow-hidden bg-slate-950 border-b border-slate-800/50">
+    <div class="absolute inset-0 hero-glow pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Conteúdo Principal -->
+        <div class="lg:col-span-7 space-y-6 hero-content">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-bolt text-emerald-400"></i> Energia e Segurança para sua Construção
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
+            Sua obra com máxima qualidade em <span class="text-gradient">Cerquilho e Tietê</span>.
+          </h1>
+          <p class="text-slate-400 text-base sm:text-lg max-w-2xl leading-relaxed">
+            Do padrão de entrada à iluminação decorativa em LED. Na Tozzi você encontra estoque completo, orientação técnica no balcão e entrega ágil para residências e indústrias.
+          </p>
+          <div class="flex flex-wrap items-center gap-4 pt-2">
+            <a href="#catalogo" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3.5 rounded-xl transition-all duration-300 hover:scale-105 flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+              <i class="fa-solid fa-store"></i> Ver Produtos
+            </a>
+            <a href="https://wa.me/5515991135609" target="_blank" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold px-6 py-3.5 rounded-xl transition-all duration-300 flex items-center gap-2 hover:border-emerald-500/50">
+              <i class="fa-brands fa-whatsapp text-emerald-400 text-lg"></i> Cotação via WhatsApp
+            </a>
+          </div>
+        </div>
 
-    <!-- Grid de Produtos -->
-    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <!-- Inserção Dinâmica via JS -->
-    </div>
-  </main>
+        <!-- Banner com Imagem e Efeito Green Glow -->
+        <div class="lg:col-span-5 hero-visual relative">
+          <div class="relative mx-auto max-w-md">
+            <div class="rounded-2xl overflow-hidden border border-emerald-900/50 bg-slate-900 shadow-2xl border-glow">
+              <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800" 
+                   alt="Materiais Elétricos Tozzi" 
+                   class="w-full h-80 object-cover hover:scale-105 transition-transform duration-700">
+              <div class="p-6 bg-slate-900/95 backdrop-blur border-t border-slate-800">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl font-bold">
+                    <i class="fa-solid fa-truck-fast"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-white font-bold text-sm">Pronta Entrega Regional</h4>
+                    <p class="text-slate-400 text-xs">Agilidade no envio para canteiros de obra.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <!-- Drawer do Carrinho -->
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 2: DIFERENCIAIS DA LOJA -->
+  <section id="diferenciais" class="py-16 bg-slate-900/40 border-b border-slate-800/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="feature-card bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-emerald-500/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white">Atendimento Técnico de Balcão</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Orientação especializada para eletricistas e construtores na escolha das bitolas de fios e especificação de disjuntores.
+          </p>
+        </div>
+
+        <div class="feature-card bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-emerald-500/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold">
+            <i class="fa-solid fa-certificate"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white">Marcas Certificadas</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Linhas completas das fabricantes mais confiáveis do país, com homologação total do INMETRO.
+          </p>
+        </div>
+
+        <div class="feature-card bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-emerald-500/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold">
+            <i class="fa-brands fa-whatsapp"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white">Cotação Rápida de Listas</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Monte seu carrinho de projeto no site e envie a lista diretamente para negociações de lote via WhatsApp.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 3: SOBRE A TOZZI -->
+  <section id="sobre" class="py-20 bg-slate-950 border-b border-slate-800/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="about-images grid grid-cols-2 gap-4">
+          <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=600" 
+               alt="Infraestrutura Elétrica" 
+               class="rounded-2xl border border-slate-800 object-cover h-64 w-full shadow-lg">
+          <img src="https://images.unsplash.com/photo-1550985616-10810253b84d?auto=format&fit=crop&q=80&w=600" 
+               alt="Iluminação LED" 
+               class="rounded-2xl border border-slate-800 object-cover h-64 w-full mt-8 shadow-lg">
+        </div>
+
+        <div class="about-content space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            Nossa História
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white leading-tight">
+            Tradição, atendimento próximo e compromisso com a sua obra.
+          </h2>
+          <p class="text-slate-400 leading-relaxed">
+            A <strong class="text-slate-200">Tozzi Materiais Elétricos</strong> foi fundada com o objetivo de suprir a demanda por produtos elétricos de alta qualidade com um atendimento realmente próximo e focado nas necessidades do cliente.
+          </p>
+          <p class="text-slate-400 leading-relaxed">
+            Com matriz na <strong class="text-slate-200">Av. Presidente Washington Luiz em Cerquilho-SP</strong> e filial na <strong class="text-slate-200">Av. Fernando Costa em Tietê-SP</strong>, oferecemos suporte técnico completo do alicerce ao acabamento.
+          </p>
+          
+          <div class="pt-4 grid grid-cols-2 gap-6 border-t border-slate-800">
+            <div>
+              <span class="text-3xl font-black text-emerald-400 block">2 Unidades</span>
+              <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">Cerquilho & Tietê</span>
+            </div>
+            <div>
+              <span class="text-3xl font-black text-emerald-400 block">+1.000</span>
+              <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">Itens em Estoque</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 4: CATÁLOGO DE PRODUTOS -->
+  <section id="catalogo" class="py-20 bg-slate-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      
+      <div class="text-center max-w-2xl mx-auto mb-10 space-y-3">
+        <h2 class="text-3xl font-bold text-white">Catálogo de Produtos</h2>
+        <p class="text-slate-400 text-sm">Selecione os itens para montar sua cotação rápida.</p>
+      </div>
+
+      <!-- Pesquisa Mobile -->
+      <div class="mb-6 block sm:hidden">
+        <div class="relative">
+          <input type="text" id="searchInputMobile" placeholder="Buscar fios, lâmpadas, disjuntores..." 
+                 class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
+        </div>
+      </div>
+
+      <!-- Filtro de Categorias -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none" id="categoriesContainer">
+        <button data-slug="all" class="category-btn bg-emerald-500 text-slate-950 font-bold px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all shadow-md shadow-emerald-500/10">
+          Todos os Produtos
+        </button>
+      </div>
+
+      <!-- Grid de Produtos Dinâmico -->
+      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 min-h-[300px]">
+        <!-- Preenchido dinamicamente via JS -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SEÇÃO 5: LOCALIZAÇÕES / UNIDADES -->
+  <section id="unidades" class="py-16 bg-slate-900/30 border-t border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-xl mx-auto mb-12 space-y-2">
+        <h2 class="text-3xl font-bold text-white">Nossas Unidades</h2>
+        <p class="text-slate-400 text-sm">Visite nossas lojas ou entre em contato pelo WhatsApp.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Matriz Cerquilho -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div class="flex items-center justify-between">
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">Matriz Cerquilho</span>
+            <i class="fa-solid fa-location-dot text-emerald-400 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white">Cerquilho - SP</h3>
+          <p class="text-slate-400 text-sm">
+            <i class="fa-solid fa-map-pin text-emerald-400 mr-2"></i>
+            Av. Presidente Washington Luiz, 646 - Centro, Cerquilho - SP, 18520-000
+          </p>
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span><i class="fa-solid fa-clock mr-1"></i> Seg a Sex: 08h às 18h</span>
+            <a href="https://maps.app.goo.gl/73w7USV9u9jnWQdL9" target="_blank" class="text-emerald-400 hover:underline font-bold">Ver no Mapa <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></a>
+          </div>
+        </div>
+
+        <!-- Filial Tietê -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div class="flex items-center justify-between">
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">Filial Tietê</span>
+            <i class="fa-solid fa-location-dot text-emerald-400 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white">Tietê - SP</h3>
+          <p class="text-slate-400 text-sm">
+            <i class="fa-solid fa-map-pin text-emerald-400 mr-2"></i>
+            Avenida Fernando Costa, 301 - Centro, Tietê - SP, 18530-000
+          </p>
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span><i class="fa-solid fa-clock mr-1"></i> Seg a Sex: 08h às 18h</span>
+            <a href="https://wa.me/5515991135609" target="_blank" class="text-emerald-400 hover:underline font-bold">Falar no Whats <i class="fa-brands fa-whatsapp ml-1"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RODAPÉ -->
+  <footer class="bg-slate-950 border-t border-slate-800/80 py-12 text-slate-400 text-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="bg-emerald-500 text-slate-950 font-black text-xl px-3 py-1 rounded-lg">TOZZI</div>
+          <span class="font-bold text-white text-base">Materiais Elétricos</span>
+        </div>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Sua loja de materiais elétricos de confiança em Cerquilho-SP e Tietê-SP. Qualidade, preço justo e atendimento humanizado.
+        </p>
+      </div>
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Atendimento Telefônico</h4>
+        <p class="text-xs text-slate-400 mb-1"><i class="fa-solid fa-phone text-emerald-400 mr-1.5"></i> (15) 3384-1068 (Cerquilho)</p>
+        <p class="text-xs text-slate-400 mb-1"><i class="fa-brands fa-whatsapp text-emerald-400 mr-1.5"></i> (15) 99113-5609 (WhatsApp Direct)</p>
+      </div>
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm uppercase tracking-wider">Horários de Funcionamento</h4>
+        <p class="text-xs text-slate-400">Segunda a Sexta: 08:00 às 18:00</p>
+        <p class="text-xs text-slate-400">Sábado: 08:00 às 12:00</p>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 border-t border-slate-900 text-center text-xs text-slate-600">
+      &copy; 2026 Tozzi Materiais Elétricos Ltda - CNPJ: 40.202.099/0001-29. Cerquilho e Tietê / SP.
+    </div>
+  </footer>
+
+  <!-- DRAWER DO CARRINHO DE COTAÇÃO -->
   <div id="cartDrawer" class="fixed inset-0 z-50 pointer-events-none">
     <div id="cartOverlay" class="absolute inset-0 bg-slate-950/80 opacity-0 transition-opacity duration-300"></div>
-    <aside id="cartSidebar" class="absolute right-0 top-0 h-full w-full max-w-md bg-slate-900 border-l border-slate-800 p-6 flex flex-col transform translate-x-full transition-transform duration-300 pointer-events-auto">
+    <aside id="cartSidebar" class="absolute right-0 top-0 h-full w-full max-w-md bg-slate-900 border-l border-slate-800 p-6 flex flex-col transform translate-x-full transition-transform duration-300 pointer-events-auto shadow-2xl">
       <div class="flex items-center justify-between pb-4 border-b border-slate-800">
-        <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-amber-500"></i> Seu Carrinho</h2>
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-file-invoice-dollar text-emerald-400"></i> Sua Lista de Cotação
+        </h2>
         <button id="closeCartBtn" class="text-slate-400 hover:text-white p-2 text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <div id="cartItems" class="flex-1 overflow-y-auto py-4 space-y-4">
-        <!-- Itens do Carrinho via JS -->
-      </div>
+      <div id="cartItems" class="flex-1 overflow-y-auto py-4 space-y-4"></div>
 
       <div class="border-t border-slate-800 pt-4 space-y-4">
         <div>
-          <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Método de Envio / Retirada</label>
-          <select id="deliveryMethod" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
-            <option value="Retirada na Loja (Cerquilho-SP)">Retirar na Loja (Cerquilho-SP)</option>
-            <option value="Entrega em Cerquilho-SP">Entrega em Domicílio (Cerquilho-SP)</option>
+          <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Unidade Preferencial / Entrega</label>
+          <select id="deliveryMethod" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="Retirada na Matriz (Cerquilho-SP)">Retirar na Loja de Cerquilho-SP</option>
+            <option value="Retirada na Filial (Tietê-SP)">Retirar na Loja de Tietê-SP</option>
+            <option value="Entrega em Domicilio / Obra">Solicitar Entrega no Canteiro de Obras</option>
           </select>
         </div>
 
         <div id="addressField" class="hidden">
-          <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Endereço de Entrega em Cerquilho</label>
-          <input type="text" id="customerAddress" placeholder="Rua, número e bairro" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+          <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Endereço da Obra</label>
+          <input type="text" id="customerAddress" placeholder="Rua, número e cidade (Cerquilho ou Tietê)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
         </div>
 
         <div class="flex justify-between items-center text-lg font-bold">
-          <span>Total:</span>
-          <span id="cartTotal" class="text-amber-500">R$ 0,00</span>
+          <span class="text-slate-300">Estimativa:</span>
+          <span id="cartTotal" class="text-emerald-400">R$ 0,00</span>
         </div>
 
-        <button id="checkoutBtn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
-          <i class="fa-brands fa-whatsapp text-xl"></i> Finalizar no WhatsApp
+        <button id="checkoutBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-emerald-500/20">
+          <i class="fa-brands fa-whatsapp text-xl"></i> Enviar Cotação para o WhatsApp
         </button>
       </div>
     </aside>
