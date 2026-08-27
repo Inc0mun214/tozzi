@@ -1,182 +1,98 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark scroll-smooth">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOZZI — Soluções Industriais e Materiais Elétricos</title>
-  <!-- Tailwind CSS via CDN -->
+  <title>Tozzi Materiais Elétricos | Cerquilho-SP</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              neon: '#10b981',
-              dark: '#0a0d0f',
-              card: 'rgba(15, 23, 42, 0.75)',
-              border: 'rgba(255, 255, 255, 0.1)'
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    .bg-electric {
-      background-image: linear-gradient(to bottom, rgba(10, 13, 15, 0.88), rgba(10, 13, 15, 0.96)), 
-                        url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1920&q=80');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-electric text-slate-100 font-sans min-h-screen flex flex-col antialiased">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-  <!-- Header / Navbar -->
-  <header class="sticky top-0 z-50 backdrop-blur-md border-b border-brand-border bg-black/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-3 h-3 rounded-full bg-brand-neon animate-pulse"></div>
-        <span class="text-2xl font-black tracking-wider text-white">TOZZI <span class="text-brand-neon text-xs font-mono font-normal uppercase tracking-widest">Elétrica</span></span>
+  <!-- Header -->
+  <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-amber-500 text-slate-950 font-black text-xl px-3 py-1.5 rounded-lg">TOZZI</div>
+        <div>
+          <h1 class="font-bold text-lg leading-none text-white">Materiais Elétricos</h1>
+          <p class="text-xs text-amber-500 font-medium"><i class="fa-solid fa-location-dot"></i> Cerquilho - SP</p>
+        </div>
       </div>
-      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
-        <a href="#catalogo" class="hover:text-brand-neon transition">Catálogo de Produtos</a>
-        <a href="#diferenciais" class="hover:text-brand-neon transition">Diferenciais</a>
-        <a href="#contato" class="hover:text-brand-neon transition">Contato Técnico</a>
-      </nav>
-      <div class="flex items-center space-x-4">
-        <a href="/admin/admin.html" class="text-xs font-mono text-slate-400 hover:text-white transition flex items-center gap-1">
-          <i data-lucide="lock" class="w-3.5 h-3.5"></i> Area Restrita
-        </a>
-        <a href="#catalogo" class="bg-brand-neon text-black font-semibold px-5 py-2.5 rounded-lg text-sm hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20">
-          Solicitar Cotação
-        </a>
+
+      <!-- Barra de Pesquisa -->
+      <div class="flex-1 max-w-md min-w-[280px]">
+        <div class="relative">
+          <input type="text" id="searchInput" placeholder="Buscar fios, lâmpadas, disjuntores..." 
+                 class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+        </div>
       </div>
+
+      <!-- Carrinho Button -->
+      <button id="openCartBtn" class="relative bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="hidden sm:inline">Carrinho</span>
+        <span id="cartBadge" class="bg-slate-950 text-amber-500 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="relative py-24 px-4 text-center max-w-5xl mx-auto flex flex-col items-center">
-    <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono bg-brand-neon/10 text-brand-neon border border-brand-neon/20 mb-6">
-      <i data-lucide="zap" class="w-3.5 h-3.5"></i> Padrão de Alta Performance e Segurança
-    </span>
-    <h1 class="text-4xl md:text-6xl font-black tracking-tight text-white leading-tight">
-      Equipamentos e Materiais Elétricos de <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-neon to-teal-200">Alta Especificação.</span>
-    </h1>
-    <p class="mt-6 text-lg text-slate-300 max-w-2xl leading-relaxed">
-      Fornecimento especializado em quadros de comando, disjuntores, conectores e automação industrial para projetos residenciais, comerciais e industriais.
-    </p>
-    <div class="mt-8 flex flex-wrap justify-center gap-4">
-      <a href="#catalogo" class="bg-brand-neon text-black font-bold px-8 py-4 rounded-xl text-base hover:bg-emerald-400 transition flex items-center gap-2">
-        <i data-lucide="shopping-bag" class="w-5 h-5"></i> Explorar Catálogo
-      </a>
-      <a href="https://wa.me/5511999999999" target="_blank" class="border border-brand-border bg-slate-900/60 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-xl text-base hover:bg-slate-800 transition flex items-center gap-2">
-        <i data-lucide="message-square" class="w-5 h-5 text-emerald-400"></i> Falar no WhatsApp
-      </a>
+  <!-- Conteúdo Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
+    
+    <!-- Categorias / Filtros -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none" id="categoriesContainer">
+      <button data-slug="all" class="category-btn bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors">
+        Todos os Produtos
+      </button>
     </div>
-  </section>
 
-  <!-- Catálogo de Produtos -->
-  <section id="catalogo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full flex-grow">
-    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
-      <div>
-        <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Catálogo de Equipamentos</h2>
-        <p class="text-slate-400 text-sm mt-1">Selecione o produto desejado para consultar disponibilidade e especificações técnicas.</p>
+    <!-- Grid de Produtos -->
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Inserção Dinâmica via JS -->
+    </div>
+  </main>
+
+  <!-- Drawer do Carrinho -->
+  <div id="cartDrawer" class="fixed inset-0 z-50 pointer-events-none">
+    <div id="cartOverlay" class="absolute inset-0 bg-slate-950/80 opacity-0 transition-opacity duration-300"></div>
+    <aside id="cartSidebar" class="absolute right-0 top-0 h-full w-full max-w-md bg-slate-900 border-l border-slate-800 p-6 flex flex-col transform translate-x-full transition-transform duration-300 pointer-events-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-amber-500"></i> Seu Carrinho</h2>
+        <button id="closeCartBtn" class="text-slate-400 hover:text-white p-2 text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div id="categoria-filtros" class="mt-4 md:mt-0 flex flex-wrap gap-2">
-        <button class="bg-brand-neon text-black font-medium text-xs px-4 py-2 rounded-lg">Todos</button>
+
+      <div id="cartItems" class="flex-1 overflow-y-auto py-4 space-y-4">
+        <!-- Itens do Carrinho via JS -->
       </div>
-    </div>
 
-    <!-- Grid Dinâmico (Renderizado via JS da API) -->
-    <div id="produtos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div class="col-span-full text-center py-12 text-slate-400">
-        <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-brand-neon"></i>
-        Carregando produtos do estoque...
+      <div class="border-t border-slate-800 pt-4 space-y-4">
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Método de Envio / Retirada</label>
+          <select id="deliveryMethod" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+            <option value="Retirada na Loja (Cerquilho-SP)">Retirar na Loja (Cerquilho-SP)</option>
+            <option value="Entrega em Cerquilho-SP">Entrega em Domicílio (Cerquilho-SP)</option>
+          </select>
+        </div>
+
+        <div id="addressField" class="hidden">
+          <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Endereço de Entrega em Cerquilho</label>
+          <input type="text" id="customerAddress" placeholder="Rua, número e bairro" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div class="flex justify-between items-center text-lg font-bold">
+          <span>Total:</span>
+          <span id="cartTotal" class="text-amber-500">R$ 0,00</span>
+        </div>
+
+        <button id="checkoutBtn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+          <i class="fa-brands fa-whatsapp text-xl"></i> Finalizar no WhatsApp
+        </button>
       </div>
-    </div>
-  </section>
+    </aside>
+  </div>
 
-  <!-- Rodapé -->
-  <footer class="border-t border-brand-border bg-black/60 backdrop-blur-md py-8">
-    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
-      <p>© 2026 TOZZI Materiais Elétricos — Todos os direitos reservados.</p>
-      <p class="font-mono">Desenvolvido com tecnologia de alta precisão.</p>
-    </div>
-  </footer>
-
-  <!-- Script de Consumo da API -->
-  <script>
-    lucide.createIcons();
-
-    async function carregarProdutos() {
-      const grid = document.getElementById('produtos-grid');
-      try {
-        const response = await fetch('/api/produtos');
-        const produtos = await response.json();
-
-        if (!produtos || produtos.length === 0) {
-          grid.innerHTML = `
-            <div class="col-span-full text-center py-12 text-slate-400 bg-brand-card rounded-2xl border border-brand-border">
-              <i data-lucide="package-open" class="w-10 h-10 mx-auto mb-3 text-slate-500"></i>
-              <p class="font-medium text-base text-slate-300">Nenhum produto cadastrado no catálogo.</p>
-              <p class="text-xs text-slate-500 mt-1">Acesse a área restrita para cadastrar materiais elétricos.</p>
-            </div>
-          `;
-          lucide.createIcons();
-          return;
-        }
-
-        grid.innerHTML = produtos.map(prod => `
-          <div class="bg-brand-card backdrop-blur-md rounded-2xl border border-brand-border hover:border-brand-neon/50 transition-all duration-300 overflow-hidden flex flex-col group">
-            <div class="h-48 bg-slate-900/80 overflow-hidden relative">
-              <img src="${prod.imagem || 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80'}" 
-                   alt="${prod.nome}" 
-                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                   onerror="this.src='https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80'">
-              <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-brand-neon text-[10px] font-mono px-2.5 py-1 rounded-md border border-brand-neon/30 uppercase">
-                ${prod.categoria || 'Geral'}
-              </span>
-            </div>
-            <div class="p-5 flex-grow flex flex-col justify-between">
-              <div>
-                <h3 class="text-base font-bold text-white group-hover:text-brand-neon transition-colors line-clamp-1">${prod.nome}</h3>
-                <p class="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">${prod.descricao || 'Equipamento elétrico padrão industrial com garantia de fábrica.'}</p>
-              </div>
-              <div class="mt-6 pt-4 border-t border-brand-border flex items-center justify-between">
-                <div>
-                  <span class="text-[10px] font-mono text-slate-500 uppercase block">Preço Unitário</span>
-                  <span class="text-lg font-black text-white">R$ ${Number(prod.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <a href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20solicitar%20orçamento%20do%20item:%20${encodeURIComponent(prod.nome)}" 
-                   target="_blank" 
-                   class="bg-brand-neon/10 hover:bg-brand-neon text-brand-neon hover:text-black font-semibold text-xs px-3.5 py-2 rounded-lg border border-brand-neon/30 transition flex items-center gap-1.5">
-                  <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Cotar
-                </a>
-              </div>
-            </div>
-          </div>
-        `).join('');
-
-        lucide.createIcons();
-      } catch (err) {
-        console.error('Erro ao carregar catálogo:', err);
-        grid.innerHTML = `
-          <div class="col-span-full text-center py-12 text-rose-400">
-            <i data-lucide="alert-triangle" class="w-8 h-8 mx-auto mb-2"></i>
-            Erro ao conectar com a API do catálogo. Tente novamente mais tarde.
-          </div>
-        `;
-        lucide.createIcons();
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', carregarProdutos);
-  </script>
+  <script src="/js/main.js"></script>
 </body>
 </html>
