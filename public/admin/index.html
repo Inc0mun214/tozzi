@@ -101,8 +101,11 @@
 
         const data = await response.json();
 
-        if (response.ok) {
-          window.location.href = '/admin/dashboard.html';
+if (response.ok) {
+          showAlert('Login realizado com sucesso! Redirecionando...', false);
+          setTimeout(() => {
+            window.location.href = '/admin/dashboard';
+          }, 300);
         } else if (response.status === 429) {
           applyFrontendCooldown(15 * 60);
         } else {
