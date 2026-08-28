@@ -1,11 +1,11 @@
-import bcrypt from 'bcrypt';
-import { query, pool } from './src/config/db.js';
+const bcrypt = require('bcrypt');
+const { pool } = require('./src/config/db');
 
 async function seedAdmin() {
   try {
-    // Garante que a tabela exista
-    await query(`
-      CREATE TABLE IF NOT EXISTS admin_users (
+    // Garante que a tabela 'admins' exista com o nome correto
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admins (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
@@ -14,11 +14,11 @@ async function seedAdmin() {
     `);
 
     const username = 'admin';
-    const rawPassword = 'adminpassword123'; // Define a senha de acesso aqui
+    const rawPassword = 'adminpassword123';
     const hash = await bcrypt.hash(rawPassword, 10);
 
-    await query(
-      `INSERT INTO admin_users (username, password_hash)
+    await pool.query(
+      `INSERT INTO admins (username, password_hash)
        VALUES ($1, $2)
        ON CONFLICT (username) 
        DO UPDATE SET password_hash = $2`,
@@ -29,7 +29,7 @@ async function seedAdmin() {
   } catch (err) {
     console.error('❌ Erro ao criar/resetar usuário admin:', err);
   } finally {
-    pool.end();
+    await pool.end();
   }
 }
 
