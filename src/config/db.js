@@ -30,18 +30,21 @@ export async function initDb() {
     `);
 
     // 2. Tabela de Produtos
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-        image_url TEXT,
-        featured BOOLEAN DEFAULT FALSE,
-        category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
+// src/config/db.js - Tabela atualizada
+await client.query(`
+  CREATE TABLE IF NOT EXISTS products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    category_slug VARCHAR(100) DEFAULT 'fios_e_cabos',
+    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+    image_url TEXT,
+    stock INTEGER DEFAULT 0,
+    featured BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 
     await client.query('COMMIT');
     console.log('✅ Banco de dados PostgreSQL inicializado com sucesso.');

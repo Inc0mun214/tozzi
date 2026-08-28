@@ -67,7 +67,7 @@ router.post('/login', loginLimiter, async (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: 'Erro ao encerrar sessão.' });
-    res.clearCookie('connect.sid');
+    res.clearCookie('tozzi_sid'); // Ajustado para corresponder ao name configurado no server.js
     res.json({ message: 'Sessão encerrada com sucesso.' });
   });
 });

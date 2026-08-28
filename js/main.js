@@ -222,22 +222,67 @@ function updateCartUI() {
   `).join('');
 }
 
+// --- LÓGICA DE ABERTURA E FECHAMENTO DO DRAWER ---
+
 function toggleCart(open) {
-  if (!DOM.cartDrawer || !DOM.cartSidebar || !DOM.cartOverlay) return;
+  const cartDrawer = document.getElementById('cartDrawer');
+  const cartSidebar = document.getElementById('cartSidebar');
+  const cartOverlay = document.getElementById('cartOverlay');
+
+  if (!cartDrawer || !cartSidebar || !cartOverlay) return;
 
   if (open) {
-    DOM.cartDrawer.classList.remove('pointer-events-none');
-    DOM.cartOverlay.classList.remove('opacity-0');
-    DOM.cartSidebar.classList.remove('translate-x-full');
+    // Remove o bloqueio de cliques do container pai
+    cartDrawer.classList.remove('pointer-events-none');
+    
+    // Exibe a camada escura de fundo
+    cartOverlay.classList.remove('opacity-0');
+    cartOverlay.classList.add('opacity-100');
+    
+    // Desliza a gaveta para dentro da tela
+    cartSidebar.classList.remove('translate-x-full');
+    cartSidebar.classList.add('translate-x-0');
   } else {
-    DOM.cartOverlay.classList.add('opacity-0');
-    DOM.cartSidebar.classList.add('translate-x-full');
+    // Desliza a gaveta para fora da tela
+    cartSidebar.classList.remove('translate-x-0');
+    cartSidebar.classList.add('translate-x-full');
+    
+    // Oculta o fundo escuro
+    cartOverlay.classList.remove('opacity-100');
+    cartOverlay.classList.add('opacity-0');
+
+    // Restaura a trava de cliques após a animação de transição (300ms)
     setTimeout(() => {
-      DOM.cartDrawer.classList.add('pointer-events-none');
+      cartDrawer.classList.add('pointer-events-none');
     }, 300);
   }
 }
 
+// Vincula os eventos assim que o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+  fetchCategories();
+  fetchProducts();
+  updateCartUI();
+
+  const openCartBtn = document.getElementById('openCartBtn');
+  const closeCartBtn = document.getElementById('closeCartBtn');
+  const cartOverlay = document.getElementById('cartOverlay');
+
+  if (openCartBtn) {
+    openCartBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleCart(true);
+    });
+  }
+
+  if (closeCartBtn) {
+    closeCartBtn.addEventListener('click', () => toggleCart(false));
+  }
+
+  if (cartOverlay) {
+    cartOverlay.addEventListener('click', () => toggleCart(false));
+  }
+});
 // --- CHECKOUT VIA WHATSAPP ---
 
 function handleCheckout() {
