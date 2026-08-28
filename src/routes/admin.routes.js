@@ -1,65 +1,36 @@
-import { Router } from 'express';
-import bcrypt from 'bcrypt';
-import rateLimit from 'express-rate-limit';
-import { pool } from '../config/db.js';
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcrypt');
+const { pool } = require('../config/db');
 
-const router = Router();
-
-// Middleware de Autenticação Protegida
-export const requireAuth = (req, res, next) => {
-  if (req.session && req.session.admin) {
+// Middleware de Autenticação
+function requireAuth(req, res, next) {
+  if (req.session && req.session.adminId) {
     return next();
   }
-  return res.status(401).json({ error: 'Sessão inválida ou expirada. Faça login novamente.' });
-};
-
-// Rate Limiter Rígido para Login
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 3,
-  skipSuccessfulRequests: true,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    res.status(429).json({
-      error: 'Muitas tentativas incorretas. Login bloqueado por 15 minutos.',
-      retryAfterMinutes: 15
-    });
-  }
-});
+  return res.status(401).json({ error: 'Acesso não autorizado. Faça login.' });
+}
 
 // POST /api/admin/login
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Usuário e senha são obrigatórios.' });
-  }
-
   try {
-    // Anti-Enumeration: Consulta Genérica com Prepared Statement
-    const { rows } = await pool.query('SELECT * FROM admin_users WHERE username = $1', [username]);
-    const user = rows[0];
-
-    let passwordValid = false;
-    if (user) {
-      passwordValid = await bcrypt.compare(password, user.password_hash);
+    const result = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Usuário ou senha inválidos.' });
     }
 
-    if (!user || !passwordValid) {
-      return res.status(401).json({ error: 'Usuário ou senha incorretos.' });
+    const admin = result.rows[0];
+    const match = await bcrypt.compare(password, admin.password_hash);
+    if (!match) {
+      return res.status(401).json({ error: 'Usuário ou senha inválidos.' });
     }
 
-    // Criação da Sessão do Usuário
-    req.session.admin = {
-      id: user.id,
-      username: user.username
-    };
-
-    res.json({ message: 'Autenticado com sucesso!', username: user.username });
+    req.session.adminId = admin.id;
+    req.session.adminUser = admin.username;
+    res.json({ message: 'Login realizado com sucesso.', user: admin.username });
   } catch (err) {
-    console.error('Erro no login:', err);
-    res.status(500).json({ error: 'Erro interno no servidor.' });
+    res.status(500).json({ error: 'Erro interno ao realizar login.' });
   }
 });
 
@@ -67,80 +38,72 @@ router.post('/login', loginLimiter, async (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: 'Erro ao encerrar sessão.' });
-    res.clearCookie('tozzi_sid'); // Ajustado para corresponder ao name configurado no server.js
+    res.clearCookie('tozzi_sid');
     res.json({ message: 'Sessão encerrada com sucesso.' });
   });
 });
 
-// GET /api/admin/check
-router.get('/check', (req, res) => {
-  if (req.session && req.session.admin) {
-    return res.json({ authenticated: true, user: req.session.admin });
+// GET /api/admin/check-auth
+router.get('/check-auth', (req, res) => {
+  if (req.session && req.session.adminId) {
+    return res.json({ authenticated: true, user: req.session.adminUser });
   }
   res.json({ authenticated: false });
 });
 
-// --- CRUD DE PRODUTOS ---
-
-// Listar todos os produtos (Painel)
+// GET /api/admin/products
 router.get('/products', requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM products ORDER BY id DESC');
-    res.json(rows);
+    const result = await pool.query('SELECT * FROM products ORDER BY id DESC');
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Erro ao buscar produtos.' });
   }
 });
 
-// Criar novo produto
+// POST /api/admin/products
 router.post('/products', requireAuth, async (req, res) => {
   const { name, description, price, category_slug, image_url, stock, featured } = req.body;
-
   try {
-    const query = `
-      INSERT INTO products (name, description, price, category_slug, image_url, stock, featured)
-      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
-    `;
-    const values = [name, description, parseFloat(price), category_slug, image_url, parseInt(stock, 10), !!featured];
-    const { rows } = await pool.query(query, values);
-    
-    res.status(201).json(rows[0]);
+    const result = await pool.query(
+      `INSERT INTO products (name, description, price, category_slug, image_url, stock, featured)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [name, description, price || 0, category_slug || 'geral', image_url, stock || 0, featured || false]
+    );
+    res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erro ao cadastrar produto.' });
   }
 });
 
-// Atualizar produto
+// PUT /api/admin/products/:id
 router.put('/products/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
   const { name, description, price, category_slug, image_url, stock, featured } = req.body;
-
   try {
-    const query = `
-      UPDATE products 
-      SET name = $1, description = $2, price = $3, category_slug = $4, image_url = $5, stock = $6, featured = $7
-      WHERE id = $8 RETURNING *;
-    `;
-    const values = [name, description, parseFloat(price), category_slug, image_url, parseInt(stock, 10), !!featured, id];
-    const { rows } = await pool.query(query, values);
-
-    if (rows.length === 0) return res.status(404).json({ error: 'Produto não encontrado.' });
-    res.json(rows[0]);
+    const result = await pool.query(
+      `UPDATE products 
+       SET name=$1, description=$2, price=$3, category_slug=$4, image_url=$5, stock=$6, featured=$7
+       WHERE id=$8 RETURNING *`,
+      [name, description, price, category_slug, image_url, stock, featured, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Produto não encontrado.' });
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erro ao atualizar produto.' });
   }
 });
 
-// Excluir produto
+// DELETE /api/admin/products/:id
 router.delete('/products/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
   try {
-    const { rowCount } = await pool.query('DELETE FROM products WHERE id = $1', [id]);
-    if (rowCount === 0) return res.status(404).json({ error: 'Produto não encontrado.' });
+    const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Produto não encontrado.' });
     res.json({ message: 'Produto removido com sucesso.' });
   } catch (err) {
-    res.status(500).json({ error: 'Erro ao excluir produto.' });
+    res.status(500).json({ error: 'Erro ao remover produto.' });
   }
 });
 
-export default router;
+module.exports = router;
