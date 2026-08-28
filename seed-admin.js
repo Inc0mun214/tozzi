@@ -1,9 +1,10 @@
+require('dotenv').config();
 const bcrypt = require('bcrypt');
 const { pool } = require('./src/config/db');
 
 async function seedAdmin() {
   try {
-    // Garante que a tabela 'admins' exista com o nome correto
+    // Garante que a tabela 'admins' exista com a estrutura correta
     await pool.query(`
       CREATE TABLE IF NOT EXISTS admins (
         id SERIAL PRIMARY KEY,
@@ -25,12 +26,15 @@ async function seedAdmin() {
       [username, hash]
     );
 
-    console.log(`✅ Usuário '${username}' configurado com sucesso! Senha: ${rawPassword}`);
+    console.log(`✅ Usuário admin '${username}' verificado/criado com sucesso!`);
   } catch (err) {
-    console.error('❌ Erro ao criar/resetar usuário admin:', err);
-  } finally {
-    await pool.end();
+    console.error('❌ Erro no seedAdmin:', err.message);
   }
 }
 
-seedAdmin();
+module.exports = seedAdmin;
+
+// Permite rodar manualmente via terminal se necessário
+if (require.main === module) {
+  seedAdmin().then(() => pool.end());
+}
