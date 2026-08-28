@@ -138,19 +138,21 @@
     </div>
   </div>
 
-  <script>
-    // Validação de Sessão Inicial
+<script>
+    // Validação de Sessão Inicial (Rota corrigida para /api/admin/check-auth)
     async function checkAuth() {
       try {
-        const res = await fetch('/api/admin/check');
+        const res = await fetch('/api/admin/check-auth');
         const data = await res.json();
+        
         if (!data.authenticated) {
-          window.location.href = '/admin/index.html';
+          window.location.href = '/admin';
         } else {
-          document.getElementById('userBadge').innerText = `👤 ${data.user.username}`;
+          // O backend envia o nome do usuário direto no campo data.user
+          document.getElementById('userBadge').innerHTML = `<i class="fa-solid fa-user-circle text-emerald-500"></i> ${data.user || 'Admin'}`;
         }
       } catch (err) {
-        window.location.href = '/admin/index.html';
+        window.location.href = '/admin';
       }
     }
 
@@ -163,11 +165,11 @@
     async function loadProducts() {
       try {
         const res = await fetch('/api/admin/products');
-        if (res.status === 401) return window.location.href = '/admin/index.html';
+        if (res.status === 401) return window.location.href = '/admin';
         
         const products = await res.json();
 
-        if (products.length === 0) {
+        if (!Array.isArray(products) || products.length === 0) {
           tableBody.innerHTML = `
             <tr>
               <td colspan="6" class="p-8 text-center text-slate-500">Nenhum produto cadastrado no momento.</td>
@@ -185,9 +187,9 @@
                 <div class="text-xs text-slate-400 line-clamp-1">${p.description || '-'}</div>
               </div>
             </td>
-            <td class="p-4 text-slate-300 font-medium">${p.category_slug}</td>
-            <td class="p-4 font-bold text-emerald-400">R$ ${parseFloat(p.price).toFixed(2)}</td>
-            <td class="p-4 text-slate-300">${p.stock} un.</td>
+            <td class="p-4 text-slate-300 font-medium">${p.category_slug || 'geral'}</td>
+            <td class="p-4 font-bold text-emerald-400">R$ ${parseFloat(p.price || 0).toFixed(2)}</td>
+            <td class="p-4 text-slate-300">${p.stock || 0} un.</td>
             <td class="p-4 text-center">
               ${p.featured ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2.5 py-1 rounded-lg font-bold">Sim</span>' : '<span class="text-slate-500 text-xs">Não</span>'}
             </td>
@@ -297,10 +299,10 @@
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await fetch('/api/admin/logout', { method: 'POST' });
-      window.location.href = '/admin/index.html';
+      window.location.href = '/admin';
     });
 
-    // Start
+    // Inicialização
     checkAuth();
     loadProducts();
   </script>
